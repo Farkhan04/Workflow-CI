@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trained-model
-          path: MLProject/model.pkl
+          path: model.pkl
 
       - name: Login Docker Hub
         uses: docker/login-action@v3
