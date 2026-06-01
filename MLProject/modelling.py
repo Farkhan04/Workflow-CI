@@ -10,7 +10,7 @@ Original file is located at
 # =========================
 # INSTALL LIBRARY
 # =========================
-!pip install mlflow==2.19.0 -q
+# !pip install mlflow==2.19.0 -q
 
 # =========================
 # IMPORT LIBRARY
@@ -31,8 +31,14 @@ from sklearn.metrics import (
 # =========================
 # LOAD DATASET
 # =========================
-df = pd.read_csv("dataset_clean.csv")
+import os
+import pandas as pd
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+dataset_path = os.path.join(BASE_DIR, "dataset_sample.csv")
+
+df = pd.read_csv(dataset_path)
 print("Dataset berhasil dimuat")
 print("Shape awal:", df.shape)
 
