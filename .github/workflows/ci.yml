@@ -24,7 +24,7 @@ jobs:
 
       - name: Run MLflow Project
         run: |
-          mlflow run MLProject
+          mlflow run MLProject --no-condagit 
 
       - name: Upload Model Artifact
         uses: actions/upload-artifact@v4
