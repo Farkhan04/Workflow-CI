@@ -71,44 +71,13 @@ jobs:
 
       - name: Build Docker Model
         run: |
-          # Cari path MLmodel
-          MODEL_PATH=$(python3 -c "
-          import glob, os
-          files = sorted(glob.glob('mlruns/**/MLmodel', recursive=True), key=os.path.getmtime, reverse=True)
-          if files:
-              print(os.path.dirname(os.path.abspath(files[0])))
-          ")
-          echo "MODEL_PATH = $MODEL_PATH"
+          # Salin folder model artifact ke MLProject/ untuk di-COPY oleh Dockerfile
+          MODEL_ARTIFACT=$(find mlruns -type d -name "model" | head -1)
+          echo "Model artifact: $MODEL_ARTIFACT"
+          cp -r "$MODEL_ARTIFACT" MLProject/model
 
-          # Patch SEMUA file yang menyebabkan python3.9 di Dockerfile:
-          # 1. MLmodel
-          # 2. python_env.yaml
-          # 3. conda.yaml di dalam artifact
-          echo "=== Patch semua python version ==="
-          find mlruns -name "MLmodel" | while read f; do
-            sed -i 's/python_version: .*/python_version: 3.12.7/' "$f"
-            echo "Patched: $f"
-          done
-
-          find mlruns -name "python_env.yaml" | while read f; do
-            sed -i 's/python==.*/python==3.12.7/' "$f"
-            sed -i 's/- python.*/- python=3.12.7/' "$f"
-            echo "Patched: $f"
-            cat "$f"
-          done
-
-          find mlruns -name "conda.yaml" | while read f; do
-            sed -i 's/python=.*/python=3.12.7/' "$f"
-            echo "Patched: $f"
-            cat "$f"
-          done
-
-          echo "=== MLmodel final ==="
-          cat $(find mlruns -name MLmodel | head -1)
-
-          mlflow models build-docker \
-            --model-uri "$MODEL_PATH" \
-            --name "retail-sales-forecasting"
+          # Build docker pakai Dockerfile kita sendiri — tidak bergantung python_version di MLmodel
+          docker build -t retail-sales-forecasting MLProject/
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -121,9 +90,9 @@ jobs:
           docker tag retail-sales-forecasting \
             ${{ secrets.DOCKER_USERNAME }}/retail-sales-forecasting:latest
           docker tag retail-sales-forecasting \
-            ${{ secrets.DOCKER_PASSWORD }}/retail-sales-forecasting:${{ env.RUN_ID }}
+            ${{ secrets.DOCKER_USERNAME }}/retail-sales-forecasting:${{ env.RUN_ID }}
 
       - name: Push Docker Image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/retail-sales-forecasting:latest
-          docker push ${{ secrets.DOCKER_PASSWORD }}/retail-sales-forecasting:${{ env.RUN_ID }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/retail-sales-forecasting:${{ env.RUN_ID }}
