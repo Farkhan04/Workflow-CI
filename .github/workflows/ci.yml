@@ -17,34 +17,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout ────────────────────────────────────────────────────────
       - name: Run actions/checkout@v3
         uses: actions/checkout@v3
 
-      # ── 2. Setup Python 3.12.7 ─────────────────────────────────────────────
       - name: Set up Python 3.12.7
         uses: actions/setup-python@v4
         with:
           python-version: "3.12.7"
 
-      # ── 3. Check Env ───────────────────────────────────────────────────────
       - name: Check Env
         run: |
           echo "CSV_URL    = $CSV_URL"
           echo "TARGET_VAR = $TARGET_VAR"
 
-      # ── 4. Install dependencies (mlflow only) ──────────────────────────────
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install mlflow==2.19.0
 
-      # ── 5. Run mlflow project ──────────────────────────────────────────────
       - name: Run mlflow project
         run: |
           mlflow run MLProject --env-manager=local
 
-      # ── 6. Get latest MLflow run_id ────────────────────────────────────────
       - name: Get latest MLflow run_id
         run: |
           RUN_ID=$(python3 -c "
@@ -64,12 +58,10 @@ jobs:
           echo "RUN_ID=${RUN_ID}" >> $GITHUB_ENV
           echo "Latest run_id: ${RUN_ID}"
 
-      # ── 7. Install Python dependencies (untuk upload artifact) ─────────────
       - name: Install Python dependencies
         run: |
           pip install pandas numpy scikit-learn joblib
 
-      # ── 8. Upload to GitHub (pengganti Upload to Google Drive) ─────────────
       - name: Upload to GitHub
         uses: actions/upload-artifact@v4
         with:
@@ -77,30 +69,34 @@ jobs:
           path: mlruns/
           retention-days: 30
 
-      # ── 9. Build Docker Model ──────────────────────────────────────────────
       - name: Build Docker Model
         run: |
-          MODEL_URI=$(python3 -c "
+          # Cari path fisik artifact/model di runner — hindari runs:/ yang baca meta.yaml lokal
+          MODEL_PATH=$(python3 -c "
           import glob, os
           files = glob.glob('mlruns/**/MLmodel', recursive=True)
           if files:
-              parts = files[0].replace('\\\\', '/').split('/')
-              run_id = parts[2]
-              print(f'runs:/{run_id}/model')
+              # Ambil folder parent dari MLmodel → itu folder model
+              print(os.path.dirname(os.path.abspath(files[0])))
           ")
-          echo "MODEL_URI = $MODEL_URI"
+          echo "MODEL_PATH = $MODEL_PATH"
+
+          if [ -z "$MODEL_PATH" ]; then
+            echo "ERROR: MLmodel tidak ditemukan!"
+            exit 1
+          fi
+
+          # Gunakan path absolut langsung — tidak bergantung pada meta.yaml
           mlflow models build-docker \
-            --model-uri "$MODEL_URI" \
+            --model-uri "$MODEL_PATH" \
             --name "retail-sales-forecasting"
 
-      # ── 10. Log in to Docker Hub ───────────────────────────────────────────
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # ── 11. Tag Docker Image ───────────────────────────────────────────────
       - name: Tag Docker Image
         run: |
           docker tag retail-sales-forecasting \
@@ -108,7 +104,6 @@ jobs:
           docker tag retail-sales-forecasting \
             ${{ secrets.DOCKER_USERNAME }}/retail-sales-forecasting:${{ env.RUN_ID }}
 
-      # ── 12. Push Docker Image ──────────────────────────────────────────────
       - name: Push Docker Image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/retail-sales-forecasting:latest
