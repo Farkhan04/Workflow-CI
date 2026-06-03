@@ -102,10 +102,20 @@ print("Test size :", X_test.shape)
 # SET MLFLOW
 # =========================
 mlflow.set_experiment("Retail Sales Forecasting")
+
+# =========================
+# START RUN
+# =========================
+mlflow.set_experiment("Retail Sales Forecasting")
+
+with mlflow.start_run():
+    mlflow.log_param(...)
+    mlflow.log_metric(...)
+    mlflow.sklearn.log_model(...)
     # =========================
     # MODEL
     # =========================
-model = RandomForestRegressor(
+    model = RandomForestRegressor(
         n_estimators=10,
         max_depth=10,
         random_state=42,
@@ -115,38 +125,38 @@ model = RandomForestRegressor(
     # =========================
     # TRAINING
     # =========================
-model.fit(X_train, y_train)
+    model.fit(X_train, y_train)
 
     # =========================
     # PREDICTION
     # =========================
-y_pred = model.predict(X_test)
+    y_pred = model.predict(X_test)
 
     # =========================
     # EVALUATION
     # =========================
-mae = mean_absolute_error(y_test, y_pred)
-mse = mean_squared_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
 
     # =========================
     # LOG PARAMETER
     # =========================
-mlflow.log_param("model_type", "RandomForestRegressor")
-mlflow.log_param("n_estimators", 10)
-mlflow.log_param("max_depth", 10)
+    mlflow.log_param("model_type", "RandomForestRegressor")
+    mlflow.log_param("n_estimators", 10)
+    mlflow.log_param("max_depth", 10)
 
     # =========================
     # LOG METRICS
     # =========================
-mlflow.log_metric("MAE", mae)
-mlflow.log_metric("MSE", mse)
-mlflow.log_metric("R2_Score", r2)
+    mlflow.log_metric("MAE", mae)
+    mlflow.log_metric("MSE", mse)
+    mlflow.log_metric("R2_Score", r2)
 
     # =========================
     # LOG MODEL
     # =========================
-mlflow.sklearn.log_model(
+    mlflow.sklearn.log_model(
         sk_model=model,
         artifact_path="model"
     )
@@ -154,10 +164,10 @@ mlflow.sklearn.log_model(
     # =========================
     # OUTPUT
     # =========================
-print("\nTraining selesai!")
-print(f"MAE       : {mae}")
-print(f"MSE       : {mse}")
-print(f"R2 Score  : {r2}")
+    print("\nTraining selesai!")
+    print(f"MAE       : {mae}")
+    print(f"MSE       : {mse}")
+    print(f"R2 Score  : {r2}")
 
 # =========================
 # MENJALANKAN MLFLOW UI
