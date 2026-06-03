@@ -25,7 +25,9 @@ jobs:
       - name: Run MLflow Project
         run: |
           mlflow run MLProject --env-manager=local
-
+        env:
+          MLFLOW_ALLOW_FILE_STORE: "true"
+          
       - name: Get Latest Run ID
         run: |
           RUN_ID=$(ls -td mlruns/0/*/ | head -n 1 | cut -d'/' -f3)
