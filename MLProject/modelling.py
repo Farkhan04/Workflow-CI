@@ -70,13 +70,11 @@ print("Test size :", X_test.shape)
 input_example = X_train.iloc[:5]
 
 # =========================
-# SET MLFLOW EXPERIMENT
+# TRAINING + MLFLOW
 # =========================
-mlflow.set_experiment("Retail Sales Forecasting")
+# JANGAN set_experiment() di sini — mlflow run sudah handle run ID nya
+# Cukup aktifkan run yang sudah ada dari mlflow run CLI
 
-# =========================
-# TRAINING + MLFLOW RUN
-# =========================
 with mlflow.start_run() as run:
 
     # ✅ WAJIB: autolog sebelum model.fit()
@@ -120,12 +118,12 @@ with mlflow.start_run() as run:
 
     run_id = run.info.run_id
 
-    # Simpan run_id.txt di BASE_DIR (MLProject/) DAN root workspace
+    # Simpan run_id ke 2 lokasi agar CI bisa baca
     for save_path in [
-        os.path.join(BASE_DIR, "run_id.txt"),          # MLProject/run_id.txt
-        os.path.join(BASE_DIR, "..", "run_id.txt"),    # root run_id.txt
+        os.path.join(BASE_DIR, "run_id.txt"),
+        os.path.join(BASE_DIR, "..", "run_id.txt"),
     ]:
-        with open(save_path, "w") as f:
+        with open(os.path.abspath(save_path), "w") as f:
             f.write(run_id)
         print(f"run_id disimpan ke: {os.path.abspath(save_path)}")
 
