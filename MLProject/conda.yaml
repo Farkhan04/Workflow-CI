@@ -1,10 +1,14 @@
-name: mlflow-env
+name: retail-sales-env
+
 channels:
-  - defaults
+  - conda-forge
+
 dependencies:
-  - python=3.10
+  - python=3.12
   - pip
   - pip:
-      - mlflow
+      - mlflow==2.19.0
       - pandas
+      - numpy
       - scikit-learn
+      - cloudpickle

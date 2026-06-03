@@ -18,7 +18,6 @@ Original file is located at
 import pandas as pd
 import mlflow
 import mlflow.sklearn
-import joblib # Added joblib import
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
@@ -49,9 +48,9 @@ df.dropna(subset=['sales'], inplace=True)
 
 # =========================
 # SAMPLING DATA
-# supaya training lebih cepat
 # =========================
-df = df.sample(n=100000, random_state=42)
+if len(df) > 100000:
+    df = df.sample(n=100000, random_state=42)
 
 print("Shape setelah sampling:", df.shape)
 
@@ -102,8 +101,6 @@ print("Test size :", X_test.shape)
 # =========================
 # SET MLFLOW
 # =========================
-mlflow.set_tracking_uri("file:./mlruns")
-
 mlflow.set_experiment("Retail Sales Forecasting")
 
 # =========================
@@ -155,11 +152,10 @@ with mlflow.start_run():
     # =========================
     # LOG MODEL
     # =========================
-    # Due to a potential ImportError with mlflow.sklearn.log_model in version 2.19.0,
-    # we will save the model using joblib and then log it as an artifact.
-    joblib.dump(model, "random_forest_model.pkl")
-    mlflow.log_artifact("random_forest_model.pkl")
-    # mlflow.sklearn.log_model(model, "model") # Original line causing error, commented out
+    mlflow.sklearn.log_model(
+        sk_model=model,
+        artifact_path="model"
+    )
 
     # =========================
     # OUTPUT
