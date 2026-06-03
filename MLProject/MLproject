@@ -1,4 +1,4 @@
-name: MLProject
+name: retail-sales-forecasting
 
 conda_env: conda.yaml
 

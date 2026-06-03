@@ -1,0 +1,15 @@
+artifact_uri: file:D:/1_Membangun_Machine_Learning/Workflow-CI/mlruns/0/514e7574b1b5482781631f8ab69227c7/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 514e7574b1b5482781631f8ab69227c7
+run_name: sassy-fawn-294
+run_uuid: 514e7574b1b5482781631f8ab69227c7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1780456197686
+status: 1
+tags: []
+user_id: lenovo
