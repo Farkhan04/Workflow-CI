@@ -71,12 +71,11 @@ jobs:
 
       - name: Build Docker Model
         run: |
-          # Cari path fisik artifact/model di runner — hindari runs:/ yang baca meta.yaml lokal
+          # Cari path fisik MLmodel di runner
           MODEL_PATH=$(python3 -c "
           import glob, os
           files = glob.glob('mlruns/**/MLmodel', recursive=True)
           if files:
-              # Ambil folder parent dari MLmodel → itu folder model
               print(os.path.dirname(os.path.abspath(files[0])))
           ")
           echo "MODEL_PATH = $MODEL_PATH"
@@ -86,7 +85,9 @@ jobs:
             exit 1
           fi
 
-          # Gunakan path absolut langsung — tidak bergantung pada meta.yaml
+          # Fix: jalankan apt-get update dulu agar apt install python3.x tidak gagal
+          sudo apt-get update -y
+
           mlflow models build-docker \
             --model-uri "$MODEL_PATH" \
             --name "retail-sales-forecasting"
@@ -95,7 +96,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          password: ${{ secrets.DOCKER_PASSWORD}}
 
       - name: Tag Docker Image
         run: |
