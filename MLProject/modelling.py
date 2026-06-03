@@ -112,8 +112,7 @@ with mlflow.start_run():
     mlflow.log_param("model_type", "RandomForestRegressor")
     mlflow.log_param("n_estimators", 10)
     mlflow.log_param("max_depth", 10)
-    mlflow.log_metric(...)
-    mlflow.sklearn.log_model(...)
+
     # =========================
     # MODEL
     # =========================
